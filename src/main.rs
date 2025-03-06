@@ -9,35 +9,38 @@ use core::panic::PanicInfo;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
-    println!("Hello World{}", "!");
+	println!("Hello World{}", "!");
 
-    os::init();
+	os::init();
 
-   
+	use x86_64::registers::control::Cr3;
 
-    #[cfg(test)]
-    test_main();
+	let (level_4_page_table, _) = Cr3::read();
+	println!("Level 4 page table at: {:?}", level_4_page_table.start_address());
+
+	#[cfg(test)]
+	test_main();
 
 
-    println!("It did not crash!");
-    os::hlt_loop();
+	println!("It did not crash!");
+	os::hlt_loop();
 }
 
 /// This function is called on panic.
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    println!("{}", info);
-    os::hlt_loop();
+	println!("{}", info);
+	os::hlt_loop();
 }
 
 #[cfg(test)]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    blog_os::test_panic_handler(info)
+	blog_os::test_panic_handler(info)
 }
 
 #[test_case]
 fn trivial_assertion() {
-    assert_eq!(1, 1);
+	assert_eq!(1, 1);
 }
